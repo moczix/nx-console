@@ -1,4 +1,5 @@
 {
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/vscode/src",
   "projectType": "application",
   "prefix": "vscode",
@@ -10,35 +11,17 @@
       "options": {
         "commands": [
           {
-            "command": "yarn nx watch vscode",
+            "command": "yarn nx run vscode:build:watch",
             "prefix": "vscode",
             "color": "blue"
           },
           {
-            "command": "yarn nx watch vscode-ui",
+            "command": "yarn nx run vscode-ui:build:watch",
             "prefix": "vscode-ui",
             "color": "green"
           }
         ],
         "parallel": true
-      }
-    },
-    "watch": {
-      "executor": "@nrwl/node:webpack",
-      "options": {
-        "externalDependencies": ["vscode", "typescript"],
-        "webpackConfig": "apps/vscode/webpack.config.js",
-        "outputPath": "dist/apps/vscode",
-        "main": "apps/vscode/src/main.ts",
-        "tsConfig": "apps/vscode/tsconfig.app.json",
-        "assets": [
-          "apps/vscode/src/package.json",
-          "apps/vscode/src/nx-schema.json",
-          "apps/vscode/src/tree-view-icon.svg",
-          "apps/vscode/src/assets",
-          "apps/vscode/src/getting-started"
-        ],
-        "watch": true
       }
     },
     "build": {
@@ -74,11 +57,14 @@
         "buildLibsFromSource": true
       },
       "configurations": {
+        "watch": {
+          watch
+        },
         "production": {
           "sourceMap": false,
           "optimization": true,
           "extractLicenses": true,
-          "externalDependencies": ["vscode"],
+          "externalDependencies": ["vscode", "@swc-node/register"],
           "fileReplacements": [
             {
               "replace": "apps/vscode/src/environments/environment.ts",
@@ -88,6 +74,7 @@
           "webpackConfig": "apps/vscode/webpack.prod.config.js"
         }
       },
+      "defaultConfiguration": "production",
       "outputs": ["{options.outputPath}"]
     },
     "lint": {
@@ -98,11 +85,9 @@
     },
     "package": {
       "executor": "@nrwl/workspace:run-commands",
+      "dependsOn": ["build"],
       "options": {
-        "commands": [
-          "yarn nx run vscode:build:production",
-          "node ./tools/scripts/vscode-vsce.js"
-        ],
+        "commands": ["node ./tools/scripts/vscode-vsce.js"],
         "parallel": false
       }
     }
