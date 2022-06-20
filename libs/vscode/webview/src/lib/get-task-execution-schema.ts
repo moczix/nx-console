@@ -4,7 +4,7 @@ import {
   getTelemetry,
   readTargetDef,
 } from '@nx-console/server';
-import { getNxConfig, nxWorkspace } from '@nx-console/vscode/nx-workspace';
+import { nxWorkspace } from '@nx-console/vscode/nx-workspace';
 import { verifyBuilderDefinition } from '@nx-console/vscode/verify';
 import { Uri, window } from 'vscode';
 import {
@@ -25,7 +25,8 @@ export async function getTaskExecutionSchema(
     if (!cliTaskProvider.getWorkspacePath()) {
       return;
     }
-    const { validWorkspaceJson, json, workspaceType } = await nxWorkspace();
+    const { validWorkspaceJson, workspace, workspaceType } =
+      await nxWorkspace();
 
     if (!validWorkspaceJson) {
       return;
@@ -67,7 +68,7 @@ export async function getTaskExecutionSchema(
           const { validBuilder, options } = await verifyBuilderDefinition(
             selection.projectName,
             selection.command,
-            json
+            workspace
           );
           if (!validBuilder) {
             return;
@@ -129,14 +130,14 @@ export async function getTaskExecutionSchema(
         return { ...generator, cliName: workspaceType, contextValues };
       }
       default: {
-        const selectedProject = await selectCliProject(command, json);
+        const selectedProject = await selectCliProject(command, workspace);
 
         if (!selectedProject) return;
 
         const { validBuilder, options } = await verifyBuilderDefinition(
           selectedProject.projectName,
           command,
-          json
+          workspace
         );
         if (!validBuilder) {
           return;
@@ -196,9 +197,9 @@ async function getConfigValuesFromContextMenuUri(
       .replace(workspacePath, '')
       .replace(/\\/g, '/')
       .replace(/^\//, '');
-    const nxConfig = await getNxConfig(workspacePath);
-    const appsDir = nxConfig.workspaceLayout?.appsDir ?? 'packages';
-    const libsDir = nxConfig.workspaceLayout?.libsDir ?? 'packages';
+    const { workspace } = await nxWorkspace();
+    const appsDir = workspace.workspaceLayout?.appsDir ?? 'packages';
+    const libsDir = workspace.workspaceLayout?.libsDir ?? 'packages';
     if (
       (appsDir && generator.name === 'application') ||
       generator.name === 'app'

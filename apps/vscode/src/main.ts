@@ -217,13 +217,6 @@ async function setWorkspace(workspacePath: string) {
   // Set the NX_WORKSPACE_ROOT_PATH as soon as possible so that the nx utils can get this.
   process.env.NX_WORKSPACE_ROOT_PATH = workspacePath;
 
-  // const { verifyWorkspace } = await import('@nx-console/vscode/nx-workspace');
-
-  // const { validWorkspaceJson } = await verifyWorkspace();
-  // if (!validWorkspaceJson) {
-  //   return;
-  // // }
-
   if (!cliTaskProvider) {
     cliTaskProvider = new CliTaskProvider();
     registerNxCommands(context, cliTaskProvider);
@@ -284,20 +277,20 @@ async function setWorkspace(workspacePath: string) {
 }
 
 async function setApplicationAndLibraryContext(workspacePath: string) {
-  const { getNxConfig } = await import('@nx-console/vscode/nx-workspace');
+  const { nxWorkspace } = await import('@nx-console/vscode/nx-workspace');
 
-  let nxConfig: AsyncReturnType<typeof getNxConfig>;
+  let workspace: AsyncReturnType<typeof nxWorkspace>['workspace'];
   try {
-    nxConfig = await getNxConfig(workspacePath);
+    workspace = (await nxWorkspace()).workspace;
   } catch {
     return;
   }
 
   commands.executeCommand('setContext', 'nxAppsDir', [
-    join(workspacePath, nxConfig.workspaceLayout?.appsDir ?? 'apps'),
+    join(workspacePath, workspace.workspaceLayout?.appsDir ?? 'apps'),
   ]);
   commands.executeCommand('setContext', 'nxLibsDir', [
-    join(workspacePath, nxConfig.workspaceLayout?.libsDir ?? 'libs'),
+    join(workspacePath, workspace.workspaceLayout?.libsDir ?? 'libs'),
   ]);
 
   const generatorCollections = await getGenerators(workspacePath);
